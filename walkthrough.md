@@ -1,5 +1,4 @@
-﻿# NSE Market Data Pipeline - Interview Guide
-
+﻿# NSE Market Data Pipeline
 > **Diagram:** see `architecture.svg` in this folder (opens in any browser).
 
 ---
