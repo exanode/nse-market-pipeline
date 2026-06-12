@@ -1,6 +1,6 @@
-# nse-market-pipeline
+﻿# nse-market-pipeline
 
-Daily ingest of NSE equity prices into a 3-layer S3 → Snowflake → dbt warehouse. Orchestrated in Airflow.
+Daily ingest of NSE equity prices into a 3-layer S3 -> Snowflake -> dbt warehouse. Orchestrated in Airflow.
 
 ---
 
@@ -8,14 +8,14 @@ Daily ingest of NSE equity prices into a 3-layer S3 → Snowflake → dbt wareho
 
 ```
 NSE API (unofficial, session-cookie based)
-  ↓  fetch with exponential backoff on 429s, one session reused across symbols
+  |  fetch with exponential backoff on 429s, one session reused across symbols
 S3 raw   raw/nse/prices/price_date=YYYY-MM-DD/symbol=XXX/data.parquet
-  ↓  explicit PyArrow schema, dedup on (symbol, date), Snappy compressed
+  |  explicit PyArrow schema, dedup on (symbol, date), Snappy compressed
 S3 staging / curated  (same Hive partition structure)
-  ↓  COPY INTO
+  |  COPY INTO
 Snowflake RAW.raw_nse_prices
-  ↓  dbt: stg_ → int_ → fct_/dim_ + snapshot
-Snowflake MARTS.fct_daily_prices   (incremental merge, grain: symbol �- date)
+  |  dbt: stg_ -> int_ -> fct_/dim_ + snapshot
+Snowflake MARTS.fct_daily_prices   (incremental merge, grain: symbol ï¿½- date)
 Snowflake MARTS.dim_stock
 Snowflake SNAPSHOTS.scd_stock_metadata  (SCD Type 2)
 ```
@@ -97,22 +97,22 @@ pytest tests/ -v
 
 ```
 nse-market-pipeline/
-├── ingestion/
-│   ├── config.py       dataclass config from env vars
-│   ├── schema.py       PyArrow schema + field mapping from NSE API keys
-│   ├── checkpoint.py   symbol-level run state
-│   ├── fetch.py        NSE API calls, retry logic
-│   ├── writer.py       Parquet → S3, Snowflake COPY INTO
-│   ├── logger.py       structured JSON logging
-│   └── main.py         CLI entrypoint
-├── dbt_project/
-│   ├── models/staging/
-│   ├── models/intermediate/
-│   ├── models/marts/
-│   ├── snapshots/
-│   └── macros/
-├── airflow/dags/
-├── tests/
-├── sample_data/
-└── docker-compose.yml
+|-- ingestion/
+|   |-- config.py       dataclass config from env vars
+|   |-- schema.py       PyArrow schema + field mapping from NSE API keys
+|   |-- checkpoint.py   symbol-level run state
+|   |-- fetch.py        NSE API calls, retry logic
+|   |-- writer.py       Parquet -> S3, Snowflake COPY INTO
+|   |-- logger.py       structured JSON logging
+|   `-- main.py         CLI entrypoint
+|-- dbt_project/
+|   |-- models/staging/
+|   |-- models/intermediate/
+|   |-- models/marts/
+|   |-- snapshots/
+|   `-- macros/
+|-- airflow/dags/
+|-- tests/
+|-- sample_data/
+`-- docker-compose.yml
 ```

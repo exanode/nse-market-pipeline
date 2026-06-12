@@ -1,8 +1,8 @@
-"""
+﻿"""
 NSE Market Data Pipeline DAG
 
 Schedule: Mon-Fri 13:30 UTC (30 minutes after NSE closes at 15:30 IST).
-Order: ingest → copy_into_snowflake → dbt run → dbt test → dbt snapshot.
+Order: ingest -> copy_into_snowflake -> dbt run -> dbt test -> dbt snapshot.
 
 Backfill: catchup=True, max_active_runs=1 prevents parallel runs writing to the same
 S3 partition. Each task reads RUN_DATE from Airflow's logical_date ({{ ds }}).
@@ -69,7 +69,7 @@ default_args = {
 
 with DAG(
     dag_id="nse_market_pipeline",
-    description="Daily NSE price ingest → Snowflake → dbt",
+    description="Daily NSE price ingest -> Snowflake -> dbt",
     schedule_interval="30 13 * * 1-5",
     start_date=datetime(2024, 1, 1),
     catchup=True,

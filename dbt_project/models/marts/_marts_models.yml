@@ -1,10 +1,10 @@
-version: 2
+ï»¿version: 2
 
 models:
   - name: fct_daily_prices
     description: >
       Incremental fact table. One row per symbol per trading date.
-      Grain: symbol Ã- price_date.
+      Grain: symbol x price_date.
     columns:
       - name: price_key
         description: Surrogate key (MD5 of symbol + price_date)

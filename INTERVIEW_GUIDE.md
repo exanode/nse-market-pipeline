@@ -1,4 +1,4 @@
-# NSE Market Data Pipeline - Interview Guide
+﻿# NSE Market Data Pipeline - Interview Guide
 
 > **Diagram:** see `architecture.svg` in this folder (opens in any browser).
 
@@ -6,11 +6,11 @@
 
 ## 30-second pitch
 
-"I built an end-to-end daily market data pipeline that ingests NSE equity closing prices through a paginated, session-cookie-based API into a 3-layer S3 data lake (raw/staging/curated) as Hive-partitioned Parquet, loads it into Snowflake via COPY INTO, and models it with a full dbt project - staging → intermediate → fact/dim layers plus an SCD Type 2 snapshot. The whole thing is orchestrated in Airflow with verified 7-day backfill and confirmed idempotency: re-running any day produces zero duplicates."
+"I built an end-to-end daily market data pipeline that ingests NSE equity closing prices through a paginated, session-cookie-based API into a 3-layer S3 data lake (raw/staging/curated) as Hive-partitioned Parquet, loads it into Snowflake via COPY INTO, and models it with a full dbt project - staging -> intermediate -> fact/dim layers plus an SCD Type 2 snapshot. The whole thing is orchestrated in Airflow with verified 7-day backfill and confirmed idempotency: re-running any day produces zero duplicates."
 
 ---
 
-## Architecture walkthrough (2–3 min)
+## Architecture walkthrough (2-3 min)
 
 ```mermaid
 flowchart TD
@@ -23,7 +23,7 @@ flowchart TD
     F --> H["dim_stock (table)"]
     D --> I["scd_stock_metadata\nSCD2 snapshot, check strategy"]
 
-    subgraph Airflow ["Airflow DAG - Mon–Fri 13:30 UTC, catchup=True, max_active_runs=1"]
+    subgraph Airflow ["Airflow DAG - Mon-Fri 13:30 UTC, catchup=True, max_active_runs=1"]
         T1[ingest_nse_prices] --> T2[copy_into_snowflake] --> T3[dbt_run] --> T4[dbt_test] --> T5[dbt_snapshot]
     end
 ```
@@ -34,8 +34,8 @@ flowchart TD
 2. **Schema enforcement:** `schema.py` defines an explicit PyArrow schema - no inference. If the API shape changes, the pipeline fails loudly instead of silently writing bad types.
 3. **Lake:** Parquet written to S3 in 3 layers (raw/staging/curated), Hive-partitioned by `price_date` and `symbol`, Snappy-compressed, with dedup on `(symbol, date)` before write.
 4. **Warehouse:** `COPY INTO` loads the curated layer into `RAW.raw_nse_prices` in Snowflake.
-5. **dbt:** `stg_` (rename/cast, view) → `int_prices_enriched` (business logic, view) → `fct_daily_prices` (incremental, merge on `(symbol, price_date)`, grain symbol �- date) and `dim_stock`. `scd_stock_metadata` is an SCD2 snapshot with `dbt_valid_from/to`.
-6. **Orchestration:** Airflow DAG `ingest → copy_into_snowflake → dbt_run → dbt_test → dbt_snapshot`, Mon–Fri 13:30 UTC (30 min after NSE close at 15:30 IST), 2 retries, `on_failure_callback` sends an email alert. Every task reads `{{ ds }}` so backfills are date-correct.
+5. **dbt:** `stg_` (rename/cast, view) -> `int_prices_enriched` (business logic, view) -> `fct_daily_prices` (incremental, merge on `(symbol, price_date)`, grain symbol ï¿½- date) and `dim_stock`. `scd_stock_metadata` is an SCD2 snapshot with `dbt_valid_from/to`.
+6. **Orchestration:** Airflow DAG `ingest -> copy_into_snowflake -> dbt_run -> dbt_test -> dbt_snapshot`, Mon-Fri 13:30 UTC (30 min after NSE close at 15:30 IST), 2 retries, `on_failure_callback` sends an email alert. Every task reads `{{ ds }}` so backfills are date-correct.
 
 ---
 
@@ -86,7 +86,7 @@ Structured JSON logs with `run_id`, `rows_read`, `rows_written`, `duration` per 
 ## Numbers to remember
 
 - 3 S3 layers, Hive-partitioned by date + symbol
-- Fact grain: symbol �- date, incremental merge
+- Fact grain: symbol ï¿½- date, incremental merge
 - All 4 dbt generic tests passing (unique, not_null, relationships, accepted_values)
 - 7-day backfill verified; zero duplicates on re-run
-- DAG: 5 tasks, Mon–Fri 13:30 UTC, retries=2, sequential backfill
+- DAG: 5 tasks, Mon-Fri 13:30 UTC, retries=2, sequential backfill
