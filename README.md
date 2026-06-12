@@ -6,6 +6,8 @@ Daily ingest of NSE equity prices into a 3-layer S3 -> Snowflake -> dbt warehous
 
 ## Architecture
 
+<img src="architecture.svg" width="1200">
+
 ```
 NSE API (unofficial, session-cookie based)
   |  fetch with exponential backoff on 429s, one session reused across symbols
