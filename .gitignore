@@ -1,0 +1,46 @@
+# python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+
+# virtual env
+env/
+venv/
+.venv/
+
+# env vars
+.env
+
+# logs
+logs/
+*.log
+
+# checkpoints
+checkpoints/
+
+# local data
+data/
+*.parquet
+*.snappy
+
+# dbt
+dbt_project/target/
+dbt_project/dbt_packages/
+dbt_project/logs/
+
+# airflow
+airflow/logs/
+airflow/plugins/__pycache__/
+
+# ide
+.vscode/
+.idea/
+*.swp
+
+# os
+.DS_Store
+Thumbs.db

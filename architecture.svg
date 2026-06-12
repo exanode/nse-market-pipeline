@@ -1,0 +1,170 @@
+<svg viewBox="0 0 1200 810" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, -apple-system, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b"/>
+    </marker>
+    <marker id="arrowPink" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#be185d"/>
+    </marker>
+    <marker id="arrowPurple" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#6d28d9"/>
+    </marker>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#0f172a" flood-opacity="0.10"/>
+    </filter>
+    <filter id="softshadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="1" stdDeviation="2" flood-color="#0f172a" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <rect x="0" y="0" width="1200" height="810" fill="#f8fafc"/>
+
+  <!-- Header -->
+  <text x="40" y="52" font-size="27" font-weight="700" fill="#0f172a">NSE Market Data Pipeline - Architecture</text>
+  <text x="40" y="79" font-size="14" fill="#64748b">Python · PyArrow · S3 · Snowflake · dbt · Airflow&#160;&#160;·&#160;&#160;Daily NSE equity prices → 3-layer lake → star schema</text>
+
+  <!-- ============ Left pipeline column ============ -->
+  <!-- Source -->
+  <rect x="40" y="104" width="390" height="90" rx="12" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="60" y="134" font-size="16" font-weight="700" fill="#92400e">NSE API (source)</text>
+  <text x="60" y="157" font-size="12.5" fill="#78350f">Session-cookie auth · one session reused per run</text>
+  <text x="60" y="176" font-size="12.5" fill="#78350f">paginated</text>
+
+  <path d="M 230 194 L 230 226" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="244" y="214" font-size="11.5" fill="#64748b">exponential backoff on 429s, retries</text>
+
+  <!-- Ingestion -->
+  <rect x="40" y="230" width="390" height="152" rx="12" fill="#dbeafe" stroke="#3b82f6" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="60" y="260" font-size="16" font-weight="700" fill="#1e40af">Python Ingestion Layer</text>
+  <text x="60" y="285" font-size="12.5" fill="#334155">fetch.py - API calls + retry logic</text>
+  <text x="60" y="305" font-size="12.5" fill="#334155">schema.py - explicit PyArrow schema (no inference)</text>
+  <text x="60" y="325" font-size="12.5" fill="#334155">checkpoint.py - per-symbol JSON run state (resume mid-run)</text>
+  <text x="60" y="345" font-size="12.5" fill="#334155">writer.py - Parquet → S3 · logger.py - structured JSON logs</text>
+  <text x="60" y="367" font-size="12" fill="#6366f1" font-style="italic">run_id · rows_read · rows_written · duration</text>
+
+  <path d="M 230 382 L 230 414" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="244" y="402" font-size="11.5" fill="#64748b">dedup on (symbol, date) · Snappy Parquet</text>
+
+  <!-- S3 -->
+  <rect x="40" y="418" width="390" height="132" rx="12" fill="#d1fae5" stroke="#10b981" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="60" y="446" font-size="16" font-weight="700" fill="#065f46">AWS S3 - 3-Layer Lake</text>
+  <text x="60" y="470" font-size="12.5" fill="#334155">raw / staging / curated - same Hive partition structure</text>
+  <text x="60" y="492" font-size="11.5" fill="#064e3b" font-family="Consolas, Menlo, monospace">raw/nse/prices/price_date=YYYY-MM-DD/</text>
+  <text x="60" y="510" font-size="11.5" fill="#064e3b" font-family="Consolas, Menlo, monospace">&#160;&#160;symbol=XXX/data.parquet</text>
+  <text x="60" y="534" font-size="12" fill="#047857" font-style="italic">Hive partitioning → partition pruning on date/symbol queries</text>
+
+  <path d="M 230 550 L 230 582" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="244" y="570" font-size="11.5" fill="#64748b">COPY INTO (external stage)</text>
+
+  <!-- Snowflake -->
+  <rect x="40" y="586" width="390" height="66" rx="12" fill="#e0f2fe" stroke="#0ea5e9" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="60" y="614" font-size="16" font-weight="700" fill="#075985">Snowflake - RAW.raw_nse_prices</text>
+  <text x="60" y="636" font-size="12.5" fill="#334155">Landing table, loaded per run-date partition</text>
+
+  <path d="M 430 619 L 464 619" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="438" y="609" font-size="11.5" fill="#64748b">dbt</text>
+
+  <!-- ============ dbt panel ============ -->
+  <rect x="470" y="104" width="420" height="550" rx="12" fill="#fce7f3" stroke="#ec4899" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="680" y="136" font-size="16.5" font-weight="700" fill="#9d174d" text-anchor="middle">dbt Project (runs in Snowflake)</text>
+
+  <rect x="490" y="162" width="380" height="58" rx="8" fill="#ffffff" stroke="#f9a8d4" filter="url(#softshadow)"/>
+  <text x="506" y="185" font-size="13" font-weight="700" fill="#9d174d">staging - stg_nse_prices (view)</text>
+  <text x="506" y="205" font-size="12" fill="#334155">rename · type-cast · light cleanup, 1:1 with source</text>
+
+  <path d="M 680 220 L 680 242" stroke="#be185d" stroke-width="2" marker-end="url(#arrowPink)"/>
+
+  <rect x="490" y="246" width="380" height="58" rx="8" fill="#ffffff" stroke="#f9a8d4" filter="url(#softshadow)"/>
+  <text x="506" y="269" font-size="13" font-weight="700" fill="#9d174d">intermediate - int_prices_enriched (view)</text>
+  <text x="506" y="289" font-size="12" fill="#334155">business logic: returns, moving aggregates, joins</text>
+
+  <path d="M 680 304 L 680 326" stroke="#be185d" stroke-width="2" marker-end="url(#arrowPink)"/>
+
+  <rect x="490" y="330" width="380" height="118" rx="8" fill="#ffffff" stroke="#f9a8d4" filter="url(#softshadow)"/>
+  <text x="506" y="354" font-size="13" font-weight="700" fill="#9d174d">marts</text>
+  <text x="506" y="376" font-size="12.5" fill="#334155">fct_daily_prices - incremental, merge on</text>
+  <text x="506" y="394" font-size="12" fill="#831843" font-family="Consolas, Menlo, monospace">(symbol, price_date)</text>
+  <text x="506" y="414" font-size="12.5" fill="#334155">dim_stock - table</text>
+  <text x="506" y="436" font-size="12" fill="#9d174d" font-style="italic">grain: symbol × date · idempotent re-runs</text>
+
+  <path d="M 680 448 L 680 470" stroke="#be185d" stroke-width="2" marker-end="url(#arrowPink)"/>
+
+  <rect x="490" y="474" width="380" height="62" rx="8" fill="#ffffff" stroke="#f9a8d4" filter="url(#softshadow)"/>
+  <text x="506" y="498" font-size="13" font-weight="700" fill="#9d174d">snapshots - scd_stock_metadata (SCD Type 2)</text>
+  <text x="506" y="518" font-size="12" fill="#334155">check strategy · dbt_valid_from / dbt_valid_to history</text>
+
+  <rect x="490" y="572" width="380" height="58" rx="8" fill="#fdf2f8" stroke="#ec4899" stroke-dasharray="5 3"/>
+  <text x="506" y="595" font-size="13" font-weight="700" fill="#9d174d">dbt tests - all 4 generic tests passing</text>
+  <text x="506" y="615" font-size="12" fill="#334155">unique · not_null · relationships · accepted_values</text>
+
+  <!-- ============ Side notes ============ -->
+  <rect x="910" y="104" width="250" height="550" rx="12" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.2" filter="url(#shadow)"/>
+  <text x="930" y="136" font-size="14.5" font-weight="700" fill="#334155">Key design decisions</text>
+
+  <circle cx="936" cy="160" r="2.5" fill="#64748b"/>
+  <text x="948" y="164" font-size="12" fill="#475569">No schema inference - explicit</text>
+  <text x="948" y="180" font-size="12" fill="#475569">PyArrow schema; API drift</text>
+  <text x="948" y="196" font-size="12" fill="#475569">fails loudly</text>
+
+  <circle cx="936" cy="218" r="2.5" fill="#64748b"/>
+  <text x="948" y="222" font-size="12" fill="#475569">Checkpoint per symbol - restart</text>
+  <text x="948" y="238" font-size="12" fill="#475569">resumes mid-run, no re-fetch</text>
+
+  <circle cx="936" cy="260" r="2.5" fill="#64748b"/>
+  <text x="948" y="264" font-size="12" fill="#475569">One NSE session per run - avoids</text>
+  <text x="948" y="280" font-size="12" fill="#475569">bot detection + cookie warm-up</text>
+
+  <circle cx="936" cy="302" r="2.5" fill="#64748b"/>
+  <text x="948" y="306" font-size="12" fill="#475569">Idempotent everywhere: dedup at</text>
+  <text x="948" y="322" font-size="12" fill="#475569">write, merge keys in dbt,</text>
+  <text x="948" y="338" font-size="12" fill="#475569">safe re-runs</text>
+
+  <circle cx="936" cy="360" r="2.5" fill="#64748b"/>
+  <text x="948" y="364" font-size="12" fill="#475569">max_active_runs=1 - sequential</text>
+  <text x="948" y="380" font-size="12" fill="#475569">backfills, no S3 key collisions</text>
+
+  <circle cx="936" cy="402" r="2.5" fill="#64748b"/>
+  <text x="948" y="406" font-size="12" fill="#475569">Structured JSON logging with</text>
+  <text x="948" y="422" font-size="12" fill="#475569">run_id for traceability</text>
+
+  <text x="930" y="460" font-size="14.5" font-weight="700" fill="#334155">Outcomes</text>
+
+  <circle cx="936" cy="484" r="2.5" fill="#64748b"/>
+  <text x="948" y="488" font-size="12" fill="#475569">Zero duplicates across repeated</text>
+  <text x="948" y="504" font-size="12" fill="#475569">same-date executions</text>
+
+  <circle cx="936" cy="526" r="2.5" fill="#64748b"/>
+  <text x="948" y="530" font-size="12" fill="#475569">All dbt generic tests passing</text>
+
+  <circle cx="936" cy="552" r="2.5" fill="#64748b"/>
+  <text x="948" y="556" font-size="12" fill="#475569">Lineage DAG published</text>
+
+  <circle cx="936" cy="578" r="2.5" fill="#64748b"/>
+  <text x="948" y="582" font-size="12" fill="#475569">Full-DAG idempotency confirmed</text>
+  <text x="948" y="598" font-size="12" fill="#475569">across re-runs</text>
+
+  <!-- ============ Airflow band ============ -->
+  <rect x="40" y="682" width="1120" height="92" rx="12" fill="#ede9fe" stroke="#8b5cf6" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="64" y="712" font-size="14.5" font-weight="700" fill="#5b21b6">Airflow - nse_market_pipeline · Mon–Fri 13:30 UTC · catchup=True · max_active_runs=1 · retries=2 · on_failure_callback → email alert</text>
+
+  <rect x="64" y="726" width="170" height="36" rx="8" fill="#ffffff" stroke="#8b5cf6" filter="url(#softshadow)"/>
+  <text x="149" y="749" font-size="12.5" fill="#5b21b6" text-anchor="middle">ingest_nse_prices</text>
+  <path d="M 234 744 L 262 744" stroke="#6d28d9" stroke-width="2" marker-end="url(#arrowPurple)"/>
+
+  <rect x="266" y="726" width="180" height="36" rx="8" fill="#ffffff" stroke="#8b5cf6" filter="url(#softshadow)"/>
+  <text x="356" y="749" font-size="12.5" fill="#5b21b6" text-anchor="middle">copy_into_snowflake</text>
+  <path d="M 446 744 L 474 744" stroke="#6d28d9" stroke-width="2" marker-end="url(#arrowPurple)"/>
+
+  <rect x="478" y="726" width="120" height="36" rx="8" fill="#ffffff" stroke="#8b5cf6" filter="url(#softshadow)"/>
+  <text x="538" y="749" font-size="12.5" fill="#5b21b6" text-anchor="middle">dbt_run</text>
+  <path d="M 598 744 L 626 744" stroke="#6d28d9" stroke-width="2" marker-end="url(#arrowPurple)"/>
+
+  <rect x="630" y="726" width="120" height="36" rx="8" fill="#ffffff" stroke="#8b5cf6" filter="url(#softshadow)"/>
+  <text x="690" y="749" font-size="12.5" fill="#5b21b6" text-anchor="middle">dbt_test</text>
+  <path d="M 750 744 L 778 744" stroke="#6d28d9" stroke-width="2" marker-end="url(#arrowPurple)"/>
+
+  <rect x="782" y="726" width="150" height="36" rx="8" fill="#ffffff" stroke="#8b5cf6" filter="url(#softshadow)"/>
+  <text x="857" y="749" font-size="12.5" fill="#5b21b6" text-anchor="middle">dbt_snapshot</text>
+
+  <text x="960" y="749" font-size="12" fill="#6d28d9" font-style="italic">7-day backfill verified</text>
+</svg>

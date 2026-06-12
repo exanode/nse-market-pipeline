@@ -1,0 +1,28 @@
+version: 2
+
+sources:
+  - name: raw
+    database: NSE_MARKET
+    schema: RAW
+    description: Raw NSE price data loaded via COPY INTO from S3
+    freshness:
+      warn_after: {count: 1, period: day}
+      error_after: {count: 3, period: day}
+    loaded_at_field: ingested_at
+
+    tables:
+      - name: raw_nse_prices
+        description: One row per symbol per trading date, loaded from Parquet in S3
+        columns:
+          - name: symbol
+            tests:
+              - not_null
+          - name: date
+            tests:
+              - not_null
+          - name: close
+            tests:
+              - not_null
+          - name: run_id
+            tests:
+              - not_null

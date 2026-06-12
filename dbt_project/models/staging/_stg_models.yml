@@ -1,0 +1,22 @@
+version: 2
+
+models:
+  - name: stg_nse_prices
+    description: Cleaned and renamed NSE daily price records
+    columns:
+      - name: symbol
+        tests:
+          - not_null
+          - dbt_utils.not_empty_string
+      - name: price_date
+        tests:
+          - not_null
+      - name: close_price
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0.01
+              max_value: 1000000
+      - name: run_id
+        tests:
+          - not_null
